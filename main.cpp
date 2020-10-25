@@ -1,8 +1,10 @@
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
 using namespace std;
 
 class dijktra{
+	public:
 	//instance variables
 	int numNodes;
 	int sourceNode;
@@ -23,8 +25,16 @@ class dijktra{
 		this->newCost = 0;
 	}
 	//methods
-	void loadCostMatrix(){
-		
+	void loadCostMatrix(ifstream& input){
+		int val1;
+		int val2;
+		int cost;
+		input >> val1;
+		while(input >> val1){
+			input >> val2;
+			input >> cost;
+			this->costMatrix[val1][val2] = cost;
+		}
 	}
 	void setBestCostAry(int sourceNode){
 		
@@ -36,7 +46,19 @@ class dijktra{
 		
 	}
 	int findMinNode(){
-		return 0;
+		int minCost = 99999;
+		this->minNode = 0;
+		int index = 1;
+		while(index <= this->numNodes){
+			if(this->markedAry[index] == 0){
+				if(this->bestCostAry[index] < minCost){
+					minCost = this->bestCostAry[index];
+					this->minNode = index;
+				}
+			}
+			index++;
+		}
+		return minNode;
 	}
 	int computeCost(int minNode,int currentNode){
 		return 0;
@@ -62,6 +84,54 @@ int main(int argc, char* argv[]){
 		return -1;
 	}
 	//creates dijktra class
-	dijktra path();
+	dijktra path;
+	//discovers node amount
+	int nodeCount = 0;
+	input >> nodeCount;
+	if(nodeCount > path.numNodes)
+		path.numNodes = nodeCount;
+	while(input >> nodeCount){
+		if(nodeCount > path.numNodes)
+			path.numNodes = nodeCount;
+		input >> nodeCount;
+		if(nodeCount > path.numNodes)
+			path.numNodes = nodeCount;
+		input >> nodeCount;
+	}
+	input.close();
+	
+	//initializing arrays based on number
+	cout<<path.numNodes<<endl;
+	//2d array
+	path.costMatrix = new int*[path.numNodes + 1];
+	for(int i=0;i<path.numNodes+1;i++){
+		path.costMatrix[i] = new int[path.numNodes + 1];
+	}
+	for(int i=0;i<path.numNodes+1;i++){
+		for(int j=0;j<path.numNodes+1;j++){
+			if(i == j)
+				path.costMatrix[i][j] = 0;
+			else
+				path.costMatrix[i][j] = 99999;
+		}
+	}
+	//1d arrys
+	path.fatherAry = new int[path.numNodes + 1];
+	for(int i=0;i<path.numNodes+1;i++){
+		path.fatherAry[i] = i;
+	}
+	path.markedAry = new int[path.numNodes + 1];
+	for(int i=0;i<path.numNodes+1;i++){
+		path.markedAry[i] = 0;
+	}
+	path.bestCostAry = new int[path.numNodes + 1];
+	for(int i=0;i<path.numNodes+1;i++){
+		path.bestCostAry[i] = 99999;
+	}
+	
+	input.open(argv[1]);
+	path.loadCostMatrix(input);
+	input.close();
+	
 	return 0;
 }
