@@ -106,12 +106,13 @@ class dijktra{
 	}
 	//todo
 	void printShortestPath(int currentNode, int sourceNode, ofstream& output){
-		output<<"Source Node = "<<sourceNode<<endl;
-		for(int i=1;i<=this->numNodes;i++){
-			output<<"The path from "<<sourceNode<<" to "<<i<<endl;
-			
+		int cost = this->bestCostAry[currentNode];
+		output<<"The path from "<<sourceNode<<" to "<<currentNode<<" : ";
+		while(currentNode != this->fatherAry[currentNode]){
+			output<<currentNode<<"<-";
+			currentNode = fatherAry[currentNode];
 		}
-		output<<"==============================\n";
+		output<<currentNode<<"<-"<<sourceNode<<" : cost = "<<cost<<endl;
 	}
 	bool completelyMarked(){
 		for(int i=1;i<this->numNodes + 1;i++){
@@ -140,22 +141,12 @@ int main(int argc, char* argv[]){
 	//creates dijktra class
 	dijktra path;
 	//discovers node amount
-	int nodeCount = 0;
-	input >> nodeCount;
-	if(nodeCount > path.numNodes)
-		path.numNodes = nodeCount;
-	while(input >> nodeCount){
-		if(nodeCount > path.numNodes)
-			path.numNodes = nodeCount;
-		input >> nodeCount;
-		if(nodeCount > path.numNodes)
-			path.numNodes = nodeCount;
-		input >> nodeCount;
-	}
+	input >> path.numNodes;
 	input.close();
 	output<<"==============================\n";
 	output<<"There are "<<path.numNodes<<" in the input graph. Below are all the pairs of shortest paths:\n";
 	output<<"==============================\n";
+	output.close();
 	//initializing arrays based on number
 	//2d array
 	path.costMatrix = new int*[path.numNodes + 1];
@@ -221,12 +212,14 @@ int main(int argc, char* argv[]){
 		}
 		//path printing begins
 		path.currentNode = 1;
+		output.open(argv[2],ios::app);
+		output<<"Source node = "<<path.sourceNode<<endl<<endl;
 		while(path.currentNode <= path.numNodes){
-			output.open(argv[2]);
 			path.printShortestPath(path.currentNode, path.sourceNode, output);
-			output.close();
 			path.currentNode++;
 		}
+		output<<"==============================\n";
+		output.close();
 		path.sourceNode++;
 	}
 	return 0;
