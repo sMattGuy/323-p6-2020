@@ -19,13 +19,13 @@ class dijktra{
 	//constructor
 	dijktra(){
 		this->numNodes = 0;
-		this->sourceNode = 0;
+		this->sourceNode = 1;
 		this->minNode = 0;
-		this->currentNode = 0;
+		this->currentNode = 1;
 		this->newCost = 0;
 	}
 	//methods
-	void loadCostMatrix(ifstream& input){
+	void loadCostMatrix(ifstream& input, ofstream& debug){
 		int val1;
 		int val2;
 		int cost;
@@ -35,15 +35,32 @@ class dijktra{
 			input >> cost;
 			this->costMatrix[val1][val2] = cost;
 		}
+		debug<<"Printing Cost Matrix\n";
+		for(int i=0;i<=this->numNodes;i++)
+			debug<<i<<"\t";
+		debug<<endl;
+		for(int i=1;i<=this->numNodes;i++){
+			debug<<i<<"\t";
+			for(int j=1;j<this->numNodes + 1;j++){
+				debug<<this->costMatrix[i][j]<<"\t";
+			}
+			debug<<endl;
+		}
 	}
 	void setBestCostAry(int sourceNode){
-		
+		for(int i=1;i<this->numNodes+1;i++){
+			this->bestCostAry[i] = this->costMatrix[sourceNode][i]; //if doesnt work flip sourcenode and i
+		}
 	}
 	void setFatherAry(){
-		
+		for(int i=1;i<this->numNodes+1;i++){
+			this->fatherAry[i] = i;
+		}
 	}
 	void setMarkedAry(int sourceNode){
-		
+		for(int i=1;i<=this->numNodes;i++)
+			this->markedAry[i] = 0;
+		this->markedAry[sourceNode] = 1;
 	}
 	int findMinNode(){
 		int minCost = 99999;
@@ -61,13 +78,48 @@ class dijktra{
 		return minNode;
 	}
 	int computeCost(int minNode,int currentNode){
-		return 0;
+		int bestCost;
+		bestCost = this->bestCostAry[minNode] + this->costMatrix[minNode][currentNode];
+		return bestCost;
 	}
-	void debugPrint(){
-		
+	void debugPrint(ofstream& debug, string location){
+		debug<<"\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+		debug<<location<<endl;
+		debug<<"=============================\nPrinting Father Array\n";
+		for(int i=1;i<this->numNodes + 1;i++){
+			debug<<this->fatherAry[i]<<" ";
+		}
+		debug<<"\n=============================\nPrinting Best Cost Array\n";
+		for(int i=1;i<this->numNodes + 1;i++){
+			debug<<this->bestCostAry[i]<<" ";
+		}
+		debug<<"\n=============================\nPrinting Marked Array\n";
+		for(int i=1;i<this->numNodes + 1;i++){
+			debug<<this->markedAry[i]<<" ";
+		}
+		debug<<"\n=============================\nPrinting Values\n";
+		debug<<"numNodes = "<<this->numNodes<<endl;
+		debug<<"sourceNode = "<<this->sourceNode<<endl;
+		debug<<"minNode = "<<this->minNode<<endl;
+		debug<<"currentNode = "<<this->currentNode<<endl;
+		debug<<"newCost = "<<this->newCost<<endl;
 	}
-	void printShortestPath(){
-		
+	//todo
+	void printShortestPath(int currentNode, int sourceNode, ofstream& output){
+		output<<"Source Node = "<<sourceNode<<endl;
+		for(int i=1;i<=this->numNodes;i++){
+			output<<"The path from "<<sourceNode<<" to "<<i<<endl;
+			
+		}
+		output<<"==============================\n";
+	}
+	bool completelyMarked(){
+		for(int i=1;i<this->numNodes + 1;i++){
+			if(this->markedAry[i] != 1){
+				return false;
+			}
+		}
+		return true;
 	}
 };
 
@@ -83,6 +135,8 @@ int main(int argc, char* argv[]){
 		cout<<"Failed to read input file, was name typed correctly?\n";
 		return -1;
 	}
+	ofstream output(argv[2]);
+	ofstream debug(argv[3]);
 	//creates dijktra class
 	dijktra path;
 	//discovers node amount
@@ -99,39 +153,81 @@ int main(int argc, char* argv[]){
 		input >> nodeCount;
 	}
 	input.close();
-	
+	output<<"==============================\n";
+	output<<"There are "<<path.numNodes<<" in the input graph. Below are all the pairs of shortest paths:\n";
+	output<<"==============================\n";
 	//initializing arrays based on number
-	cout<<path.numNodes<<endl;
 	//2d array
 	path.costMatrix = new int*[path.numNodes + 1];
-	for(int i=0;i<path.numNodes+1;i++){
+	for(int i=1;i<path.numNodes+1;i++){
 		path.costMatrix[i] = new int[path.numNodes + 1];
 	}
-	for(int i=0;i<path.numNodes+1;i++){
-		for(int j=0;j<path.numNodes+1;j++){
+	for(int i=1;i<path.numNodes+1;i++){
+		for(int j=1;j<path.numNodes+1;j++){
 			if(i == j)
 				path.costMatrix[i][j] = 0;
 			else
 				path.costMatrix[i][j] = 99999;
 		}
 	}
+	
 	//1d arrys
 	path.fatherAry = new int[path.numNodes + 1];
-	for(int i=0;i<path.numNodes+1;i++){
-		path.fatherAry[i] = i;
-	}
 	path.markedAry = new int[path.numNodes + 1];
-	for(int i=0;i<path.numNodes+1;i++){
+	for(int i=1;i<path.numNodes+1;i++){
 		path.markedAry[i] = 0;
 	}
 	path.bestCostAry = new int[path.numNodes + 1];
-	for(int i=0;i<path.numNodes+1;i++){
-		path.bestCostAry[i] = 99999;
+	for(int i=1;i<path.numNodes+1;i++){
+		path.bestCostAry[i] = 9999;
 	}
-	
+	//loads cost matrix
 	input.open(argv[1]);
-	path.loadCostMatrix(input);
+	path.loadCostMatrix(input, debug);
 	input.close();
-	
+	debug.close();
+	//sets best cost array
+	path.sourceNode = 1;
+	while(path.sourceNode <= path.numNodes){
+		path.setBestCostAry(path.sourceNode);
+		//sets father array
+		path.setFatherAry();
+		//sets marked array
+		path.setMarkedAry(path.sourceNode);
+		//step 3
+		while(!path.completelyMarked()){
+			path.currentNode = 1;
+			path.minNode = path.findMinNode();
+			path.markedAry[path.minNode] = 1;
+			//debug print
+			debug.open(argv[3],ios::app);
+			path.debugPrint(debug,"printing from outside");
+			debug.close();
+			//sets current node
+			//loop of steps 5 to 6
+			while(path.currentNode <= path.numNodes){
+				if(path.markedAry[path.currentNode] == 0){
+					path.newCost = path.computeCost(path.minNode, path.currentNode);
+					if(path.newCost < path.bestCostAry[path.currentNode]){
+						path.bestCostAry[path.currentNode] = path.newCost;
+						path.fatherAry[path.currentNode] = path.minNode;
+						debug.open(argv[3], ios::app);
+						path.debugPrint(debug, "printing from inside");
+						debug.close();
+					}
+				}
+				path.currentNode++;
+			}
+		}
+		//path printing begins
+		path.currentNode = 1;
+		while(path.currentNode <= path.numNodes){
+			output.open(argv[2]);
+			path.printShortestPath(path.currentNode, path.sourceNode, output);
+			output.close();
+			path.currentNode++;
+		}
+		path.sourceNode++;
+	}
 	return 0;
 }
