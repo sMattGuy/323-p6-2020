@@ -1,6 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
+/**
+* Matthew Flammia, 23661371
+* 323.35 Project 6 SSS
+* To compile: g++ -o FlammiaM_Project6_CPP main.cpp
+* To run: ./FlammiaM_Project6_CPP.exe SSS_Data.txt Output.txt Debug.txt
+* Program will not run if arguments arent supplied or input file cannot be read
+**/
 using namespace std;
 
 class dijktra{
